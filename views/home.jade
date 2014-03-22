@@ -1,0 +1,23 @@
+doctype html
+html
+    head
+        title Chat
+        block head
+            script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+            link(rel = 'stylesheet' href='//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css')
+            link(rel = 'stylesheet' href='/main.css')
+            script(type='text/javascript' src="/socket.io/socket.io.js")
+            block js
+    body
+        div.container
+            block header
+                a(href='/')
+                    h1 SLS Language Chat
+            block content
+                div.row.language-container
+                    div.col-md-4
+                        a#start-english.btn.btn-success.btn-lg.btn-block(href='chat/English') English
+                    div.col-md-4
+                        a#start-spanish.btn.btn-warning.btn-lg.btn-block(href='chat/Spanish') Spanish
+                    div.col-md-4
+                        a#start-french.btn.btn-primary.btn-lg.btn-block(href='chat/French') French
