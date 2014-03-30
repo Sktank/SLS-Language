@@ -68,6 +68,7 @@ $(function () {
     $("#messageInput").attr('disabled', true);
     var path = window.location.pathname;
     var language = path.split('/')[2].toLowerCase();
+    var level = path.split('/')[3];
 
-    socket.emit('setLanguage', language);
+    socket.emit('setChatRoom', language, level);
 });

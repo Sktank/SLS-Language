@@ -8,7 +8,12 @@ var express = require('express'),
     jade = require('jade'),
     http = require('http'),
     random = require("node-random"),
-    request = require('request');
+    swig = require('swig'),
+    request = require('request'),
+    mongoose = require('mongoose'),
+    RBTree = require('bintrees').RBTree;
+
+mongoose.connect('mongodb://localhost/test');
 
 
 var app = express(),
@@ -16,14 +21,17 @@ var app = express(),
     io = require('socket.io').listen(server);
 server.listen(3000);
 
-var googleApiKey = 'AIzaSyDyYwY9iZG8Jr2uv_6aRscKqybfYwN9S2E'
+var googleApiKey = 'AIzaSyDyYwY9iZG8Jr2uv_6aRscKqybfYwN9S2E';
+var maxValue = 9007199254740992;
+var SPEED = .0025; // grows 25 points in 5 seconds
 
 // =========================================================
 //                        Config
 // =========================================================
 
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.engine('html', swig.renderFile);
+app.set('view engine', 'html');
 app.set("view options", { layout: false });
 app.use(express.static(__dirname + '/public'));
 
@@ -31,17 +39,46 @@ app.use(express.static(__dirname + '/public'));
 //                        Routing
 // =========================================================
 
+languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Chinese', 'Japanese', 'Arabic'];
+
 app.get('/', function (req, res) {
    res.render(
-       'home.jade'
+       'home.html', {languages:languages}
    );
 });
 
-app.get('/chat/:language', chat.enter);
+app.get('/chat/:language/:level', chat.enter);
+
+
+// =========================================================
+//                        Mongoose
+// =========================================================
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function callback () {
+    console.log("open");
+    var userSchema = mongoose.Schema({
+        name: String
+    })
+    var User = mongoose.model('User', userSchema);
+
+    var user1 = new User({ name: 'spencer' });
+
+//    user1.save(function (err, user) {
+//        if (err) return console.error(err);
+//    });
+});
 
 // =========================================================
 //                        Sockets
 // =========================================================
+
+var levelMap = {
+    "beginner": 25,
+    "intermediate": 50,
+    "advanced": 75
+};
 
 io.sockets.on('connection', function (socket) {
 
@@ -49,10 +86,16 @@ io.sockets.on('connection', function (socket) {
     console.log('socket: ' + socket);
 
     //
-    socket.on('setLanguage', function(language) {
-        queueUser(this, language);
+    socket.on('setChatRoom', function(language, level) {
+        var score = levelMap[level];
+        socket.language = language;
+        socket.score = score;
+        socket.time = new Date().getTime();
+        socket.nonce = Math.floor(Math.random()*maxValue) + 1;
+        socket.matched = false;
+        socket.chatLanguage = chatMap[socket.language];
+        queueUser(socket);
         console.log(language);
-        socket.language = language
     });
 
     socket.on('message', function (message) {
@@ -60,19 +103,24 @@ io.sockets.on('connection', function (socket) {
         var data = message.data;
         socket.broadcast.to(room).emit('message', data);
 
+
+        //Google translate stuff
+
         // randomly check if message is in the correct language
-        random.numbers({
-            "number": 1,
-            "minimum": 1,
-            "maximum": 10
-        }, function(error, number) {
-            if (!error) {
-                if (number[0] == 10) {
-                    console.log(data[0]);
-                    detectLanguage(socket, data);
-                }
-            }
-        });
+//        console.log("lookup");
+//        detectLanguage(socket, data);
+//        random.numbers({
+//            "number": 1,
+//            "minimum": 1,
+//            "maximum": 10
+//        }, function(error, number) {
+//            if (!error) {
+////                if (number[0] == 10) {
+//                console.log(data[0]);
+//                detectLanguage(socket, data);
+////                }
+//            }
+//        });
 
     });
 
@@ -86,16 +134,14 @@ io.sockets.on('connection', function (socket) {
             });
         }
 
-        if (socket.Queue) {
-            console.log(socket.Queue);
-            var index = socket.Queue.indexOf(socket);
-            if (index > -1) {
-                socket.Queue.splice(index, 1);
-            }
-        }
+        if (socket.tree) {
+            console.log(socket.tree);
+            socket.tree.remove(socket);
 
-        if (socket.language) {
-            delete socket.language;
+            // update timers
+            updateTimersFromRemove(socket, socket);
+
+
         }
 
     })
@@ -105,51 +151,157 @@ io.sockets.on('connection', function (socket) {
 //                     Language Matchmaking
 // =========================================================
 
+function updateTimersFromRemove(first, second) {
+    var it = first.tree.upperBound(first);
+    var prev = it.prev();
+    it = first.tree.lowerBound(second);
+    var next = it.data();
+    if (prev) {
+        clearInterval(prev.timer);
+    }
+    if (prev && next) {
+        updateTimer(prev, next);
+    }
+}
+
 function LanguageChat(language) {
     this.numRooms = 0;
-    this.Queue = [];
+    this.Queues = {
+        beginner:[],
+        intermediate:[],
+        advanced:[],
+        native:[]
+    };
+    this.tree = new RBTree(function(a, b) {
+        if(Object.is(a, b)) {
+            return 0;
+        }
+        if (a && b) {
+            var comp = a.score - b.score;
+            if (comp == 0) {
+                var timeDiff = b.time - a.time;
+                if (timeDiff != 0) {
+                    return timeDiff;
+                }
+                else {
+                    return a.nonce - b.nonce;
+                }
+            }
+            else {
+                return comp;
+            }
+        }
+        else {
+            return 1;
+        }
+    });
     this.language = language;
 }
 
-var englishChat = new LanguageChat('english');
-var spanishChat = new LanguageChat('spanish');
-var frenchChat = new LanguageChat('french');
+
+// definition of of global chat room queues
+var englishChat = new LanguageChat('english'),
+    spanishChat = new LanguageChat('spanish'),
+    frenchChat = new LanguageChat('french'),
+    germanChat = new LanguageChat('german'),
+    italianChat = new LanguageChat('italian'),
+    chineseChat = new LanguageChat('chinese'),
+    japaneseChat = new LanguageChat('japanese'),
+    arabicChat = new LanguageChat('arabic');
 
 var chatMap = {
     english: englishChat,
     spanish: spanishChat,
-    french: frenchChat
+    french: frenchChat,
+    german: germanChat,
+    italian: italianChat,
+    chinese: chineseChat,
+    japanese: japaneseChat,
+    arabic: arabicChat
 };
 
-function queueUser(socket, language) {
-    var chat = chatMap[language];
-    chat.Queue.push(socket);
-    socket.Queue = chat.Queue;
-    createMatch(chat);
+function queueUser(socket) {
+//    lang.Queues[level].push(socket);
+    socket.tree = socket.chatLanguage.tree;
+    socket.tree.insert(socket);
+    createTreeMatch(socket.tree, socket);
 }
 
-function createMatch(chat) {
-    var queue = chat.Queue;
-    console.log('length = ' + queue.length);
-    console.log(queue);
-    if (queue.length > 1) {
-        var room = chat.language + '-' + chat.numRooms;
-        chat.numRooms = chat.numRooms + 1;
-        var user1 = queue.pop(),
-            user2 = queue.pop();
-        user1.join(room);
-        user2.join(room);
-        user1.room = room;
-        user2.room = room;
-        delete user1.Queue;
-        delete user2.Queue;
-        io.sockets.in(room).emit('start', room);
-        return true;
+function createTreeMatch(tree, socket) {
+//    var tit=tree.iterator(), item;
+//    console.log("=========entire=========");
+//    while((item = tit.next()) !== null) {
+//        console.log(item.score + "," + item.time);
+//    }
+//    console.log("========upperbound=========");
+//    console.log("current score is: " + socket.score);
+    var it = tree.upperBound(socket);
+    var next = it.data();
+    var timeDiff;
+
+    if (next) {
+
+        // set timer for next
+        updateTimer(socket, next);
+
     }
-    else {
-        return false;
+
+    // fix previous timer
+    var lit = tree.lowerBound(socket);
+    var prev = lit.prev();
+    if (prev) {
+        console.log("the previous thinggy is, " + prev.score + "," + prev.time);
+        clearTimeout(prev.timer);
+        updateTimer(prev, socket);
     }
 }
+
+function updateTimer(current, next) {
+    var timeDiff = ((next.score - current.score)  - (SPEED * (current.time - next.time))) / (2 * SPEED);
+    if (timeDiff < 0) timeDiff = 0;
+    current.timer = setTimeout(function() {
+        checkAndMatch(current, next);
+    }, timeDiff);
+}
+
+function checkAndMatch(current, next) {
+
+    // set up room
+    var room = current.language + '-' + current.chatLanguage.numRooms;
+    current.chatLanguage.numRooms = current.chatLanguage.numRooms + 1;
+
+    //check if already been matched
+    if (!current.matched && !next.matched) {
+        current.matched = true;
+        next.matched = true;
+    }
+    else {
+        console.log("shit happened, fuck");
+        return null;
+    }
+
+    // put match in its own room
+    current.join(room);
+    next.join(room);
+    current.room = room;
+    next.room = room;
+    io.sockets.in(room).emit('start', room);
+
+    // update tree
+
+    // update timers
+    updateTimersFromRemove(current, next);
+
+    //remove nodes from tree
+    var tree = current.tree;
+    tree.remove(current);
+    tree.remove(next);
+    delete current.tree;
+    delete next.tree;
+
+}
+
+
 
 // =========================================================
 //                Google Translate Utilities
@@ -158,7 +310,12 @@ function createMatch(chat) {
 var languageCodes = {
     "en": "english",
     "es": "spanish",
-    "fr": "french"
+    "fr": "french",
+    "de": "german",
+    "it": "italian",
+    "zh-CN": "chinese",
+    "ja": "japanese",
+    "ar": "arabic"
 };
 
 function detectLanguage(socket, message) {
@@ -168,8 +325,14 @@ function detectLanguage(socket, message) {
             var info = eval("value = (" + body + ")");
             var result = info.data.detections[0][0];
             var detectedLanguage = languageCodes[result.language];
-            if (detectedLanguage != socket.language && detectedLanguage != "null" && result.confidence > 0.5) {
-                socket.emit('languageWarning', detectedLanguage)
+            console.log(result);
+            if (detectedLanguage != socket.language && result.language != "null" && result.language != "und" && result.confidence > 0.8) {
+                if (detectedLanguage) {
+                    socket.emit('languageWarning', detectedLanguage)
+                }
+                else {
+                    socket.emit('languageWarning', result.language)
+                }
             }
 
         }

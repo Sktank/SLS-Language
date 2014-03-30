@@ -41,3 +41,22 @@
 .warning-message{
     color: red;
 }
+
+.language-btn {
+    min-width: 443px;
+    margin-bottom: 10px;
+}
+
+.btn-skill-level {
+    margin-left: 20px;
+}
+
+.skill-container {
+    margin-top: 10px;
+}
+
+.btn-purp {
+    background-color: #BD72E7;
+    border-color: #BD72E7;
+    color: white;
+}

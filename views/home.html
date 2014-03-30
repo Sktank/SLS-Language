@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Forechat</title>
+    {% block head %}
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/main.css">
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    {% endblock %}
+    {% block js %}
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+    {% block header %}
+    <a href="/"><h1>SLS Language Chat</h1></a>
+    {% endblock %}
+    {% block content %}
+    <div class="container">
+        <div class="col-md-6">
+            {% for index, language in languages %}
+            {% if index < 4 %}
+            <a id="start-{{language}}" class="btn btn-success btn-lg language-btn">{{ language }}</a>
+            <div id="{{language}}dropdown"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col-md-6">
+            {% for index, language in languages %}
+            {% if index >= 4 %}
+            <a id="start-{{language}}" class="btn btn-success btn-lg language-btn">{{ language }}</a>
+            <div id="{{language}}dropdown"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+    </div>
+
+    <script>
+        {% for index, language in languages %}
+            var {{language}}toggle = false;
+            var {{language}}disabled = false;
+            console.log({{language}}toggle);
+            $('#start-{{ language}}').click(function () {
+                if (!{{language}}disabled) {
+                    {{language}}disabled = true;
+                    if (!{{language}}toggle) {
+                        $('#start-{{ language}}').append(
+                                '<div class="skill-container">' +
+                                '<a id="beginner-{{language}}" class="btn btn-info" href="/chat/{{language}}/beginner">Beginner</a>' +
+                                '<a id="intermediate-{{language}}" class="btn btn-warning btn-skill-level" href="/chat/{{language}}/intermediate">Intermediate</a>' +
+                                '<a id="advanced-{{language}}" class="btn btn-danger btn-skill-level" href="/chat/{{language}}/advanced">Advanced</a>' +
+                                '<a id="native-{{language}}" class="btn btn-skill-level btn-purp" href="/chat/{{language}}/native">Native</a>' +
+                                '</div>'
+                        );
+                        {{language}}toggle = true;
+                    }
+                    else {
+                        console.log('contract');
+                        $('#start-{{ language}}').empty().append('{{language}}');
+                        {{language}}toggle = false;
+                    }
+                    {{language}}disabled = false;
+                };
+            });
+        {% endfor %}
+    </script>
+
+
+</body>
+</html>

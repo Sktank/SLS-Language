@@ -15,6 +15,9 @@ html
                     h1 SLS Language Chat
             block content
                 div.row.language-container
+                    @languages
+                    - language in languages
+                        div = language
                     div.col-md-4
                         a#start-english.btn.btn-success.btn-lg.btn-block(href='chat/English') English
                     div.col-md-4

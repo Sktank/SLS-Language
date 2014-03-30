@@ -10,7 +10,7 @@ exports.enter = function(req, res) {
 
     var chatLanguage = req.params.language;
 
-    res.render('chat/chat.jade', {
+    res.render('chat/chat.html', {
         language: chatLanguage
     })
 };
