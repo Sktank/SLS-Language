@@ -35,7 +35,6 @@
             {% endif %}
             {% endfor %}
         </div>
-
     </div>
     </div>
 
@@ -43,29 +42,81 @@
         {% for index, language in languages %}
             var {{language}}toggle = false;
             var {{language}}disabled = false;
+            var {{language}}checking = false;
+            var {{language}}nativeIsChecked = false;
             console.log({{language}}toggle);
-            $('#start-{{ language}}').click(function () {
+            $('#start-{{ language}}').on('click', function () {
+                var self = this;
+                console.log(self);
                 if (!{{language}}disabled) {
                     {{language}}disabled = true;
                     if (!{{language}}toggle) {
                         $('#start-{{ language}}').append(
                                 '<div class="skill-container">' +
-                                '<a id="beginner-{{language}}" class="btn btn-info" href="/chat/{{language}}/beginner">Beginner</a>' +
-                                '<a id="intermediate-{{language}}" class="btn btn-warning btn-skill-level" href="/chat/{{language}}/intermediate">Intermediate</a>' +
-                                '<a id="advanced-{{language}}" class="btn btn-danger btn-skill-level" href="/chat/{{language}}/advanced">Advanced</a>' +
-                                '<a id="native-{{language}}" class="btn btn-skill-level btn-purp" href="/chat/{{language}}/native">Native</a>' +
-                                '</div>'
+                                '<a id="beginner-{{language}}" class="btn btn-info skill-btn" href="/chat/{{language}}/beginner/0">Beginner</a>' +
+                                '<a id="intermediate-{{language}}" class="btn btn-warning btn-right-skill-level skill-btn" href="/chat/{{language}}/intermediate/0">Intermediate</a>' +
+                                '<a id="advanced-{{language}}" class="btn btn-danger btn-right-skill-level skill-btn" href="/chat/{{language}}/advanced/0">Advanced</a>' +
+                                '<a id="native-{{language}}" class="btn btn-right-skill-level btn-purp skill-btn" href="/chat/{{language}}/native/0">Native</a>' +
+                                '</div>' +
+                                '<form><div class="checkbox"><label class="languageCheckLabel" id="{{language}}checkboxlabel"><input type="checkbox" class="bigCheckbox" id="{{language}}checkbox">Also match me with native speakers</label></div></form>'
+
                         );
+
+                        $('#{{language}}checkbox').click(function() {
+                            console.log("checkbox");
+                            {{language}}checking = true;
+                            if ({{language}}nativeIsChecked == false) {
+                                console.log('false');
+                                $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/1');
+                                $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/1');
+                                $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/1');
+                                {{language}}nativeIsChecked = true;
+                            }
+                            else {
+                                $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/0');
+                                $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/0');
+                                $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/0');
+                                {{language}}nativeIsChecked = false;
+                            }
+                        });
+
+                        $('#{{language}}checkboxlabel').click(function() {
+                            console.log("checkbox");
+                            {{language}}checking = true;
+                            if ({{language}}nativeIsChecked == false) {
+                            console.log('false');
+                            $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/1');
+                            $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/1');
+                            $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/1');
+                            {{language}}nativeIsChecked = true;
+                        }
+                        else {
+                            $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/0');
+                            $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/0');
+                            $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/0');
+                            {{language}}nativeIsChecked = false;
+                        }
+                        });
+
                         {{language}}toggle = true;
                     }
                     else {
-                        console.log('contract');
-                        $('#start-{{ language}}').empty().append('{{language}}');
-                        {{language}}toggle = false;
+//                        setTimeout(function() {
+                            if (!{{language}}checking) {
+                            $('#start-{{ language}}').empty().append('{{language}}');
+                            {{language}}toggle = false;
+                            }
+//                        }, 10)
+
                     }
                     {{language}}disabled = false;
+                    {{language}}checking = false;
                 };
             });
+
+
+
+
         {% endfor %}
     </script>
 

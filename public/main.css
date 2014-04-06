@@ -43,20 +43,40 @@
 }
 
 .language-btn {
-    min-width: 443px;
+    min-width: 535px;
     margin-bottom: 10px;
 }
 
-.btn-skill-level {
+.skill-btn {
+    min-width: 110px;
+}
+
+.btn-right-skill-level {
     margin-left: 20px;
+
 }
 
 .skill-container {
     margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .btn-purp {
     background-color: #BD72E7;
     border-color: #BD72E7;
     color: white;
+}
+
+.bigCheckbox {
+    height:23px;
+    width:23px;
+}
+
+.languageCheckLabel {
+    margin-left: -200px;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    margin-top: -1px;
 }

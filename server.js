@@ -47,7 +47,7 @@ app.get('/', function (req, res) {
    );
 });
 
-app.get('/chat/:language/:level', chat.enter);
+app.get('/chat/:language/:level/:native', chat.enter);
 
 
 // =========================================================
@@ -60,7 +60,7 @@ db.once('open', function callback () {
     console.log("open");
     var userSchema = mongoose.Schema({
         name: String
-    })
+    });
     var User = mongoose.model('User', userSchema);
 
     var user1 = new User({ name: 'spencer' });
@@ -77,7 +77,8 @@ db.once('open', function callback () {
 var levelMap = {
     "beginner": 25,
     "intermediate": 50,
-    "advanced": 75
+    "advanced": 75,
+    "native": 100
 };
 
 io.sockets.on('connection', function (socket) {
@@ -86,15 +87,33 @@ io.sockets.on('connection', function (socket) {
     console.log('socket: ' + socket);
 
     //
-    socket.on('setChatRoom', function(language, level) {
+    socket.on('setChatRoom', function(language, level, matchNative) {
         var score = levelMap[level];
         socket.language = language;
         socket.score = score;
         socket.time = new Date().getTime();
         socket.nonce = Math.floor(Math.random()*maxValue) + 1;
         socket.matched = false;
+        socket.queued = false;
         socket.chatLanguage = chatMap[socket.language];
-        queueUser(socket);
+        socket.tree = socket.chatLanguage.tree;
+        socket.connected = true;
+
+
+        if (level === "native") {
+            queueNativeUser(socket);
+        }
+        else {
+            queueUser(socket);
+        }
+
+        if (matchNative && level != "native") {
+            console.log("match native is set to true");
+            queueNativeSeekingUser(socket);
+        }
+        else {
+            console.log("match native is set to false");
+        }
         console.log(language);
     });
 
@@ -139,11 +158,12 @@ io.sockets.on('connection', function (socket) {
             socket.tree.remove(socket);
 
             // update timers
-            updateTimersFromRemove(socket, socket);
-
-
+            updateTimersAfterRemove(socket);
         }
 
+        socket.connected = false;
+        socket.queued = false;
+        socket.matched = false;
     })
 });
 
@@ -151,13 +171,19 @@ io.sockets.on('connection', function (socket) {
 //                     Language Matchmaking
 // =========================================================
 
-function updateTimersFromRemove(first, second) {
+function updateTimersAfterRemove(first, second) {
+    var first = first,
+        second = second;
+
+    if (!second) {
+        second = first;
+    }
     var it = first.tree.upperBound(first);
     var prev = it.prev();
     it = first.tree.lowerBound(second);
     var next = it.data();
     if (prev) {
-        clearInterval(prev.timer);
+        clearTimeout(prev.timer);
     }
     if (prev && next) {
         updateTimer(prev, next);
@@ -166,12 +192,8 @@ function updateTimersFromRemove(first, second) {
 
 function LanguageChat(language) {
     this.numRooms = 0;
-    this.Queues = {
-        beginner:[],
-        intermediate:[],
-        advanced:[],
-        native:[]
-    };
+    this.nativeQueue = new Queue();
+    this.seekingNativeQueue = new Queue();
     this.tree = new RBTree(function(a, b) {
         if(Object.is(a, b)) {
             return 0;
@@ -220,10 +242,76 @@ var chatMap = {
     arabic: arabicChat
 };
 
+function queueNativeUser(socket) {
+    var chat = chatMap[socket.language];
+    chat.nativeQueue.enqueue(socket);
+    socket.nativeQueue = chat.nativeQueue;
+    socket.queued = true;
+//    createNativeMatch(chat);
+    tryNativeMatch(chat);
+}
+
+function queueNativeSeekingUser(socket) {
+    var chat = chatMap[socket.language];
+    chat.seekingNativeQueue.enqueue(socket);
+    socket.seekingNativeQueue = chat.seekingNativeQueue;
+    socket.queued = true;
+    tryNativeMatch(chat);
+}
+
+function tryNativeMatch(chat) {
+
+    console.log("trying native match");
+    console.log("native before: " + chat.nativeQueue.length);
+    console.log("nonnative before: " + chat.seekingNativeQueue.length);
+    while (chat.seekingNativeQueue.length > 0 && (chat.seekingNativeQueue.head.value.matched == true || chat.seekingNativeQueue.head.value.connected == false)) {
+        chat.seekingNativeQueue.dequeue();
+    }
+
+    while (chat.nativeQueue.length > 0 && chat.nativeQueue.head.value.connected == false) {
+        chat.nativeQueue.dequeue();
+    }
+    console.log("native after: " + chat.nativeQueue.length);
+    console.log("nonnative after: " + chat.seekingNativeQueue.length);
+    console.log();
+    console.log("im creating a match");
+
+    if (chat.nativeQueue.length > 0 && chat.seekingNativeQueue.length > 0) {
+        console.log("im actually creating a match");
+        var room = chat.language + '-' + chat.numRooms;
+        chat.numRooms = chat.numRooms + 1;
+        var nativeUser = chat.nativeQueue.dequeue(),
+            nonNativeUser = chat.seekingNativeQueue.dequeue();
+
+        console.log("____________________________");
+        console.log("matched nonnative is: " + nonNativeUser.score);
+        console.log("____________________________");
+        nativeUser.join(room);
+        nonNativeUser.join(room);
+        nativeUser.room = room;
+        nonNativeUser.room = room;
+        delete nativeUser.nativeQueue;
+        delete nonNativeUser.seekingNativeQueue;
+        nonNativeUser.queued = false;
+        nativeUser.queued = false;
+
+        nonNativeUser.tree.remove(nonNativeUser);
+        nonNativeUser.matched = true;
+        // update timers
+        updateTimersAfterRemove(nonNativeUser);
+
+        io.sockets.in(room).emit('start', room);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 function queueUser(socket) {
 //    lang.Queues[level].push(socket);
-    socket.tree = socket.chatLanguage.tree;
     socket.tree.insert(socket);
+    socket.queued = true;
     createTreeMatch(socket.tree, socket);
 }
 
@@ -257,7 +345,14 @@ function createTreeMatch(tree, socket) {
 }
 
 function updateTimer(current, next) {
-    var timeDiff = ((next.score - current.score)  - (SPEED * (current.time - next.time))) / (2 * SPEED);
+    console.log("current score is: " + current.score);
+    console.log("next score is: " + next.score);
+    console.log("score diff is: " + (next.score - current.score));
+    console.log("time is: " + SPEED * (current.time - next.time));
+    console.log("numerator is: " + ((next.score - current.score) - Math.abs(SPEED * (current.time - next.time))));
+    console.log("denominator is: " + (2 * SPEED));
+    var timeDiff = ((next.score - current.score) - Math.abs(SPEED * (current.time - next.time))) / (2 * SPEED);
+    console.log(timeDiff);
     if (timeDiff < 0) timeDiff = 0;
     current.timer = setTimeout(function() {
         checkAndMatch(current, next);
@@ -271,7 +366,7 @@ function checkAndMatch(current, next) {
     current.chatLanguage.numRooms = current.chatLanguage.numRooms + 1;
 
     //check if already been matched
-    if (!current.matched && !next.matched) {
+    if (!current.matched && !next.matched && current.queued && next.queued) {
         current.matched = true;
         next.matched = true;
     }
@@ -290,12 +385,14 @@ function checkAndMatch(current, next) {
     // update tree
 
     // update timers
-    updateTimersFromRemove(current, next);
+    updateTimersAfterRemove(current, next);
 
     //remove nodes from tree
     var tree = current.tree;
     tree.remove(current);
     tree.remove(next);
+    current.queued = false;
+    next.queued = false;
     delete current.tree;
     delete next.tree;
 
@@ -338,3 +435,56 @@ function detectLanguage(socket, message) {
         }
     });
 }
+
+
+// =========================================================
+//                Queue Implementation
+// =========================================================
+
+function QueueNode(object) {
+    this.next = null;
+    this.value = object;
+}
+
+function Queue() {
+    var self = this;
+    this.tail = null;
+    this.head = null;
+    this.length = 0;
+
+    this.enqueue = function(object) {
+        var newNode = new QueueNode(object);
+        if (self.length > 0) {
+            self.tail.next = newNode;
+        }
+        else {
+            self.head = newNode;
+        }
+        self.tail = newNode;
+        self.length = this.length + 1;
+        return true;
+    };
+
+    this.dequeue = function() {
+//        console.log(self.length);
+        if (self.length > 0) {
+            var ret = self.head.value;
+            self.head = self.head.next;
+            self.length = self.length - 1;
+            return ret;
+        }
+        return null;
+    };
+}
+
+var ku = new Queue();
+console.log(ku.dequeue());
+ku.enqueue(5);
+ku.enqueue(6);
+ku.enqueue(7);
+console.log(ku.dequeue());
+ku.enqueue(8);
+console.log(ku.dequeue());
+console.log(ku.dequeue());
+console.log(ku.dequeue());
+

@@ -67,8 +67,17 @@ socket.on('end', function() {
 $(function () {
     $("#messageInput").attr('disabled', true);
     var path = window.location.pathname;
+    var native;
     var language = path.split('/')[2].toLowerCase();
     var level = path.split('/')[3];
+    var nativeQueue = path.split('/')[4];
+    if (nativeQueue === '1') {
+        native = true;
+    }
+    else {
+        native = false;
+    }
 
-    socket.emit('setChatRoom', language, level);
+
+    socket.emit('setChatRoom', language, level, native);
 });
