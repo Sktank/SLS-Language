@@ -45,6 +45,7 @@
 .language-btn {
     min-width: 535px;
     margin-bottom: 10px;
+    width: 100%;
 }
 
 .skill-btn {
@@ -59,6 +60,11 @@
 .skill-container {
     margin-top: 10px;
     margin-bottom: 20px;
+
+}
+
+.native-container {
+
 }
 
 .btn-purp {
@@ -73,10 +79,30 @@
 }
 
 .languageCheckLabel {
-    margin-left: -200px;
+    margin-left: -215px;
     font-size: 16px;
 }
 
 input[type="checkbox"] {
     margin-top: -1px;
+    margin-right: 6px;
 }
+
+.registration-links {
+    /*margin-left: 30%;*/
+    font-size: 16px;
+    float: right
+}
+
+.navbar-brand {
+    font-size: 30px;
+}
+
+.checkbox {
+    display: inline-block;
+}
+
+.checkbox label {
+    display: inline-block;
+}
+

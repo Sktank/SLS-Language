@@ -4,22 +4,25 @@
 // =========================================================
 
 var express = require('express'),
-    chat = require('./chat'),
-    jade = require('jade'),
-    http = require('http'),
-    random = require("node-random"),
-    swig = require('swig'),
-    request = require('request'),
+    jade     = require('jade'),
+    http     = require('http'),
+    random   = require("node-random"),
+    swig     = require('swig'),
+    request  = require('request'),
     mongoose = require('mongoose'),
-    RBTree = require('bintrees').RBTree;
+    RBTree   = require('bintrees').RBTree,
+    passport = require('passport'),
+    flash 	 = require('connect-flash'),
+    configDB = require('./config/database.js');
+//    port     = process.env.PORT || 8080;
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect(configDB.url);
 
+require('./config/passport')(passport); // pass passport for configuration
 
 var app = express(),
     server = http.createServer(app),
     io = require('socket.io').listen(server);
-server.listen(3000);
 
 var googleApiKey = 'AIzaSyDyYwY9iZG8Jr2uv_6aRscKqybfYwN9S2E';
 var maxValue = 9007199254740992;
@@ -29,11 +32,26 @@ var SPEED = .0025; // grows 25 points in 5 seconds
 //                        Config
 // =========================================================
 
-app.set('views', __dirname + '/views');
-app.engine('html', swig.renderFile);
-app.set('view engine', 'html');
-app.set("view options", { layout: false });
-app.use(express.static(__dirname + '/public'));
+app.configure(function() {
+    app.use(express.cookieParser());
+    app.use(express.bodyParser());
+    app.set('view engine', 'html');
+    app.engine('html', swig.renderFile);
+
+    app.set('views', __dirname + '/views');
+    app.set("view options", { layout: false });
+    app.use(express.static(__dirname + '/public'));
+
+    app.use(express.session({ secret: 'ilovescotchscotchyscotchscotch' })); // session secret
+    app.use(passport.initialize());
+    app.use(passport.session()); // persistent login sessions
+    app.use(flash()); // use connect-flash for flash messages stored in session
+});
+
+server.listen(3000);
+
+require('./app/routes.js')(app, passport);
+
 
 // =========================================================
 //                        Routing
@@ -41,34 +59,27 @@ app.use(express.static(__dirname + '/public'));
 
 languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Chinese', 'Japanese', 'Arabic'];
 
-app.get('/', function (req, res) {
-   res.render(
-       'home.html', {languages:languages}
-   );
-});
-
-app.get('/chat/:language/:level/:native', chat.enter);
 
 
 // =========================================================
 //                        Mongoose
 // =========================================================
 
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function callback () {
-    console.log("open");
-    var userSchema = mongoose.Schema({
-        name: String
-    });
-    var User = mongoose.model('User', userSchema);
-
-    var user1 = new User({ name: 'spencer' });
-
-//    user1.save(function (err, user) {
-//        if (err) return console.error(err);
+//var db = mongoose.connection;
+//db.on('error', console.error.bind(console, 'connection error:'));
+//db.once('open', function callback () {
+//    console.log("open");
+//    var userSchema = mongoose.Schema({
+//        name: String
 //    });
-});
+//    var User = mongoose.model('User', userSchema);
+//
+//    var user1 = new User({ name: 'spencer' });
+//
+////    user1.save(function (err, user) {
+////        if (err) return console.error(err);
+////    });
+//});
 
 // =========================================================
 //                        Sockets
@@ -171,6 +182,8 @@ io.sockets.on('connection', function (socket) {
 //                     Language Matchmaking
 // =========================================================
 
+
+// TODO: Not quite sure if this function works. Need to do some tests to verify
 function updateTimersAfterRemove(first, second) {
     var first = first,
         second = second;
@@ -181,7 +194,7 @@ function updateTimersAfterRemove(first, second) {
     var it = first.tree.upperBound(first);
     var prev = it.prev();
     it = first.tree.lowerBound(second);
-    var next = it.data();
+    var next = it.next();
     if (prev) {
         clearTimeout(prev.timer);
     }
@@ -316,19 +329,19 @@ function queueUser(socket) {
 }
 
 function createTreeMatch(tree, socket) {
-//    var tit=tree.iterator(), item;
-//    console.log("=========entire=========");
-//    while((item = tit.next()) !== null) {
-//        console.log(item.score + "," + item.time);
-//    }
+    var tit=tree.iterator(), item;
+    console.log("=========entire=========");
+    while((item = tit.next()) !== null) {
+        console.log(item.score + "," + item.time);
+    }
 //    console.log("========upperbound=========");
 //    console.log("current score is: " + socket.score);
-    var it = tree.upperBound(socket);
-    var next = it.data();
+    var it = tree.lowerBound(socket);
+    var next = it.next();
+    console.log(next);
     var timeDiff;
 
     if (next) {
-
         // set timer for next
         updateTimer(socket, next);
 
