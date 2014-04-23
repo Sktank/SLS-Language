@@ -1,3 +1,10 @@
+
+/*body {*/
+  /*background-color: #f0e68c;*/
+/*}*/
+
+
+
 .language-container {
     margin-top: 30px;
 }
@@ -9,7 +16,8 @@
 #chatEntries {
     height: 500px;
     width: 100%;
-    border: 1px solid grey;
+    border: 1px solid rgb(131, 190, 230);
+    color: rgb(0, 68, 114);
     border-radius: 5px;
     margin-bottom: 10px;
     padding: 20px;
@@ -46,6 +54,15 @@
     min-width: 535px;
     margin-bottom: 10px;
     width: 100%;
+    background-color: #ffffff;
+    border-color: rgb(131, 190, 230);
+    color: rgb(0, 68, 114);
+}
+
+.language-btn:hover {
+    background-color: rgb(250, 220, 124);
+    border-color:rgb(131, 190, 230);
+    color: rgb(0, 68, 114);
 }
 
 .skill-btn {
@@ -71,6 +88,12 @@
     background-color: #BD72E7;
     border-color: #BD72E7;
     color: white;
+}
+
+.btn-purp:hover {
+    color: white;
+    background-color: #AC50DF;
+    border-color: #AC50DF;
 }
 
 .bigCheckbox {
@@ -106,3 +129,56 @@ input[type="checkbox"] {
     display: inline-block;
 }
 
+#proficiency-review {
+    margin-left: 20px;
+}
+
+#satisfaction-review {
+    margin-left: 20px;
+}
+
+#review-thankyou {
+    display: none;
+}
+
+#reviewContainer {
+    display: none;
+}
+
+#profReviewContainer {
+    margin-bottom: 5px;
+}
+
+.nav-fore-btn {
+    background-color: black;
+    color: white;
+    border-color: #ffffff;
+}
+
+.nav-fore-btn:hover {
+    background-color: rgb(250, 207, 96);
+}
+
+.nav-fore-btn-active {
+    background-color: orange;
+    color: white;
+    border-color: orange;
+}
+
+.navbar-inverse .navbar-brand {
+     color: rgb(250, 207, 96);
+ }
+
+.navbar-inverse:hover .navbar-brand:hover {
+    color: rgb(250, 223, 169);
+}
+
+.fore-well {
+    border-color: rgb(131, 190, 230);
+    color: rgb(0, 68, 114);
+}
+
+.fore-theme {
+    border-color: rgb(131, 190, 230);
+    color: rgb(0, 68, 114);
+}

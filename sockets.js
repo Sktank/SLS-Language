@@ -21,7 +21,9 @@ module.exports = function(server, io) {
     };
     var maxValue = 9007199254740992;
     var matchmaking  = require('./matchmaking.js'),
-        translations = require('./translate.js');
+        translations = require('./translate.js'),
+        anonUser = require('./processUser.js'),
+        ratings = require('./updateRatings.js');
 
     io.sockets.on('connection', function (socket) {
 
@@ -29,7 +31,7 @@ module.exports = function(server, io) {
         console.log('socket: ' + socket);
 
         //
-        socket.on('setChatRoom', function(language, level, matchNative) {
+        socket.on('setChatRoom', function(language, level, matchNative, guid) {
             var score = levelMap[level];
             socket.language = language;
             socket.score = score;
@@ -40,6 +42,12 @@ module.exports = function(server, io) {
             socket.chatLanguage = matchmaking.chatMap[socket.language];
             socket.tree = socket.chatLanguage.tree;
             socket.connected = true;
+            socket.guid = guid;
+            console.log(guid);
+
+            //create the current profile or make a new one
+            var anonProfile = anonUser.processUser(guid);
+            //TODO: use profile to inform decision
 
 
             if (level === "native") {
@@ -85,6 +93,14 @@ module.exports = function(server, io) {
 
         });
 
+        socket.on('satReview', function(score, language) {
+            ratings.update(socket.partnerGuid, score, language, 'numSatReviews', 'totalSatScore', 'numProfReviews', 'totalProfScore')
+        });
+        socket.on('profReview', function(score, language) {
+            ratings.update(socket.partnerGuid, score, language, 'numProfReviews', 'totalProfScore', 'numSatReviews', 'totalSatScore')
+        });
+
+
         socket.on('disconnect', function() {
             if (socket.room) {
                 socket.broadcast.to(socket.room).emit('end');
@@ -92,6 +108,7 @@ module.exports = function(server, io) {
                 var roster = io.sockets.clients(socket.room);
                 roster.forEach(function(client) {
                     client.leave(socket.room);
+                    delete client.partnerGuid;
                 });
             }
 
@@ -109,3 +126,5 @@ module.exports = function(server, io) {
         })
     });
 };
+
+

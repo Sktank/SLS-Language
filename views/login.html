@@ -1,12 +1,12 @@
 {% extends './home.html' %}
 
 {% block activeTab %}
-<a type="button" class="btn btn-warning navbar-btn" href="/login">Login</a>
-<a type="button" class="btn btn-primary navbar-btn" href="/signup">Signup</a>
+<a type="button" class="btn nav-fore-btn-active navbar-btn" href="/login">Login</a>
+<a type="button" class="btn nav-fore-btn navbar-btn" href="/signup">Signup</a>
 {% endblock %}
 
 {% block content %}
-    <div class="col-md-6 col-md-offset-3">
+    <div class="col-md-6 col-md-offset-3 fore-theme">
         <h1><span class="fa fa-sign-in"></span> Login</h1>
 
         <!-- show any messages that come back with authentication -->

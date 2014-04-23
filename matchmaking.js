@@ -148,7 +148,16 @@ function tryNativeMatch(chat) {
         // update timers
         exports.updateTimersAfterRemove(nonNativeUser);
 
-        websockets.io.sockets.in(room).emit('start', room);
+        //set up guids for rating
+        nonNativeUser.partnerGuid = nativeUser.guid;
+        nativeUser.partnerGuid = nonNativeUser.guid;
+        var reviews = true;
+
+        if (nonNativeUser.guid == nativeUser.guid) {
+            reviews = false;
+        }
+
+        websockets.io.sockets.in(room).emit('start', room, reviews);
         return true;
     }
     else {
@@ -228,7 +237,18 @@ function checkAndMatch(current, next) {
     next.join(room);
     current.room = room;
     next.room = room;
-    websockets.io.sockets.in(room).emit('start', room);
+
+
+    //set up guids for rating
+    current.partnerGuid = next.guid;
+    next.partnerGuid = current.guid;
+    var reviews = true;
+
+    if (current.guid == next.guid) {
+        reviews = false;
+    }
+
+    websockets.io.sockets.in(room).emit('start', room, reviews);
 
     // update tree
 

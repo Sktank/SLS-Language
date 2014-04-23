@@ -1,19 +1,27 @@
 {% extends '../home.html' %}
 
 {% block js %}
+    <script type="text/javascript" src="/jquery.raty.js"></script>
     <script type="text/javascript" src="/chat/chatUtils.js"></script>
 {% endblock %}
 
 {% block activeTab %}
-<a type="button" class="btn btn-primary navbar-btn" href="/login">Login</a>
-<a type="button" class="btn btn-primary navbar-btn" href="/signup">Signup</a>
+<a type="button" class="btn nav-fore-btn navbar-btn" href="/login">Login</a>
+<a type="button" class="btn nav-fore-btn navbar-btn" href="/signup">Signup</a>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2>{{language}}</h2>
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-8 col-md-offset-2 fore-theme">
+            <div class="row">
+                <div class="col-md-3"><h2>{{language}}</h2></div>
+                <div class="col-md-9 well" id="reviewContainer">
+                    <div id="profReviewContainer"><span>What level is your partners proficiency?</span><span id="proficiency-review"></span></div>
+                    <div id="satReviewContainer"><span>Has this conversation been enjoyable?</span><span id="satisfaction-review"></span></div>
+                    <h4 id="review-thankyou">Thanks for your input!</h4>
+                </div>
+            </div>
             <h3 id="chat-status">Searching For Language Partner...</h3>
             <a id="newChat" href="javascript:history.go(0)" class="btn btn-warning">New Chat</a>
             <div id="chatEntries"></div>
@@ -21,9 +29,9 @@
                 <textarea type="text" rows="3" id="messageInput" class="form-control"></textarea>
             </form>
         </div>
-        <div class="col-md-4">
-            <h3>Translation Help</h3>
-        </div>
+        <!--<div class="col-md-4">-->
+            <!--<h3>Translation Help</h3>-->
+        <!--</div>-->
     </div>
 </div>
 {% endblock %}

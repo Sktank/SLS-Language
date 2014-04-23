@@ -1,12 +1,12 @@
 {% extends './home.html' %}
 
 {% block activeTab %}
-<a type="button" class="btn btn-primary navbar-btn" href="/login">Login</a>
-<a type="button" class="btn btn-warning navbar-btn active" href="/signup">Signup</a>
+<a type="button" class="btn navbar-btn nav-fore-btn" href="/login">Login</a>
+<a type="button" class="btn btn-warning navbar-btn nav-fore-btn-active" href="/signup">Signup</a>
 {% endblock %}
 
 {% block content %}
-    <div class="col-md-6 col-md-offset-3">
+    <div class="col-md-6 col-md-offset-3 fore-theme">
 
         <h1><span class="fa fa-sign-in"></span> Signup</h1>
 
@@ -25,6 +25,10 @@
                 <label>Password</label>
                 <input type="password" class="form-control" name="password">
             </div>
+            <!--<div class="form-group">-->
+                <!--<label>Repeat Password</label>-->
+                <!--<input type="password" class="form-control" name="repeat-password">-->
+            <!--</div>-->
 
             <button type="submit" class="btn btn-warning btn-lg">Signup</button>
         </form>
