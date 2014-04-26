@@ -13,6 +13,14 @@ var LocalStrategy   = require('passport-local').Strategy;
 var User       		= require('../app/models/user');
 
 // expose this function to our app using module.exports
+
+
+// This just here because I dont know where else to put it
+String.prototype.capitalize = function() {
+    var self = this.toLowerCase();
+    return self.charAt(0).toUpperCase() + self.slice(1);
+};
+
 module.exports = function(passport) {
 
     // =========================================================================
@@ -53,6 +61,19 @@ module.exports = function(passport) {
 
                 // find a user whose email is the same as the forms email
                 // we are checking to see if the user trying to login already exists
+                console.log("The req is!");
+                var firstName = req.body.firstName;
+                var lastName = req.body.lastName;
+
+                if (!firstName) {
+                    return done(null, false, req.flash('signupMessage', 'Please enter your first name!'));
+                }
+
+                if (!lastName) {
+                    return done(null, false, req.flash('signupMessage', 'Please enter your last name!'));
+                }
+
+
                 User.findOne({ 'local.email' :  email }, function(err, user) {
                     // if there are any errors, return the error
                     if (err)
@@ -63,12 +84,26 @@ module.exports = function(passport) {
                         return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
 
+
+                        var splitEmail = email.split("@");
+                        if (splitEmail.length != 2) {
+                            return done(null, false, req.flash('signupMessage', "That email doesn't appear to be real!"));
+                        }
+                        var splitDomain = splitEmail[1].split(".");
+                        if (splitDomain.length != 2) {
+                            return done(null, false, req.flash('signupMessage', "That email doesn't appear to be real!"));
+                        }
+                        var school = splitDomain[0];
+
                         // if there is no user with that email
                         // create the user
                         var newUser            = new User();
 
                         // set the user's local credentials
                         newUser.local.email    = email;
+                        newUser.name.first     = firstName.capitalize();
+                        newUser.name.last     = lastName.capitalize();
+                        newUser.school         = school.capitalize();
                         newUser.local.password = newUser.generateHash(password);
 
                         // save the user

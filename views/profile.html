@@ -1,7 +1,68 @@
-{% extends './home.html' %}
+{% extends './inside.html' %}
 
-{% block activeTab %}
-<a type="button" class="btn navbar-btn nav-fore-btn" href="/logout">Logout</a>
+{% block js %}
+    <script>
+        $(function () {
+            $("#register-course-btn").click(function() {
+                var self = this;
+                if ($(this).prop("disabled"))
+                    return false;
+                $(this).prop("disabled", true);
+                $.ajax({
+                    crossDomain: false,
+                    type: "POST",
+                    data: {name: $('#course-name').val()},
+                    url: "/register_course"
+                }).success(function(data) {
+                            console.log(data);
+                            $(self).removeProp("disabled");
+                        });
+            });
+
+            {% for index, course in school.courses %}
+                $("#enroll-course-btn{{ index }}").click(function() {
+                    var self = this;
+                    if ($(this).prop("disabled"))
+                        return false;
+                    $(this).prop("disabled", true);
+                    $.ajax({
+                        crossDomain: false,
+                        type: "POST",
+                        data: {name: "{{ course.name }}"},
+                        url: "/enroll_course"
+                    }).success(function(data) {
+                                console.log(data);
+                                $(self).removeProp("disabled");
+                    });
+                });
+
+            {% endfor %}
+
+            {% for index, alert in user.alerts %}
+            {% if alert.type == "exchange invite" %}
+                $("#accept-exchange-invite-btn{{ index }}").click(function() {
+                    var self = this;
+                    if ($(this).prop("disabled"))
+                        return false;
+                    $(this).prop("disabled", true);
+                    $.ajax({
+                        crossDomain: false,
+                        type: "POST",
+                        data: {course   : "{{ alert.contents.course }}",
+                               exchange : "{{ alert.contents.exchange }}"
+                        },
+                        url: "/accept_exchange_invite"
+                    }).success(function(data) {
+                                console.log(data);
+                                $(self).removeProp("disabled");
+                    });
+                });
+            {% endif %}
+            {% endfor %}
+
+
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -19,11 +80,70 @@
                 <p>
                     <strong>id</strong>: {{ user._id }}<br>
                     <strong>email</strong>: {{ user.local.email }}<br>
-                    <strong>password</strong>: {{ user.local.password }}
+                    <strong>first name</strong>: {{ user.name.first }}<br>
+                    <strong>last name</strong>: {{ user.name.last }}<br>
+                    <strong>full name</strong>: {{ user.name.full }}<br>
+                    <strong>school</strong>: {{ user.school }}<br>
+                    <strong>password</strong>: {{ user.local.password }}<br>
+                    <br>
+                    <strong>teacher courses</strong>: {{ user.teacherCourses }}<br>
+                    {% for tcourse in user.teacherCourses %}
+                    <a href="/courses/{{ tcourse }}">{{ tcourse }}</a>
+                    {% endfor %}
+                    <br>
+                    <strong>student courses</strong>: {{ user.studentCourses }}<br>
+                    {% for scourse in user.studentCourses %}
+                    <a href="/courses/{{ scourse }}">{{ scourse }}</a>
+                    {% endfor %}
+                    <br>
                 </p>
 
             </div>
         </div>
+
+        <div class="col-md-12">
+            <div class="well">
+                <h4>Available Classes For {{ school.name }} </h4>
+                {% for index, course in school.courses %}
+                {% if not course.taken%}
+                <div> {{index}}) {{ course.name }}</div>
+                <div> Teacher: {{ course.teacher }}</div>
+                <div class="btn btn-primary teacher-register-btn" id="enroll-course-btn{{ index }}">Enroll</div>
+                <br>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="well">
+                <h4>Register New Class</h4>
+                <form role="form">
+                    <div class="form-group" id="course-name-group">
+                        <label for="course-name">Course Name</label>
+                        <input type="name" class="form-control" id="course-name" placeholder="Enter Course Name">
+                        <ul class="errorlist" id="course-name-error"></ul>
+                    </div>
+                    <div class="btn btn-primary teacher-register-btn" id="register-course-btn">Submit</div>
+                    <span class="form-success-message" id="update-form-message"></span>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="well">
+                <h4>Alert Box</h4>
+                {% for index, alert in user.alerts %}
+                {% if alert.type == "exchange invite" %}
+                <div> <b>{{ alert.contents.inviter }}</b> has invited your course <b>{{ alert.contents.course }}</b> to join the <b>{{ alert.contents.exchange }}</b> Exchange.</div>
+                <div class="btn btn-success " id="accept-exchange-invite-btn{{ index }}">Accept</div>
+                <div class="btn btn-danger " id="decline-exchange-invite-btn{{ index }}">Decline</div>
+                <br>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
 
     </div>
 

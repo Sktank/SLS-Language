@@ -1,0 +1,83 @@
+{% extends './inside.html' %}
+
+{% block js %}
+<script>
+    $(function () {
+        var course = "{{ course.name }}";
+        $("#register-exchange-btn").click(function() {
+            var self = this;
+            if ($(this).prop("disabled"))
+                return false;
+            $(this).prop("disabled", true);
+            $.ajax({
+                crossDomain: false,
+                type: "POST",
+                data: {
+                    name: $('#exchange-name').val(),
+                    course: course
+                },
+                url: "/register_exchange"
+            }).success(function(data) {
+                        console.log(data);
+                        $(self).removeProp("disabled");
+                    });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header text-center" xmlns="http://www.w3.org/1999/html">
+    <h1><span class="fa fa-anchor"></span> {{ course.name }} Course Page</h1>
+    <h2>Position: {{ status }}</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="well">
+            <h4>Instructors:</h4>
+            {% for instructor in course.instructors %}
+            <div><b>Name:</b> {{ instructor.name }}, <b>email:</b> {{ instructor.email }}</div>
+            {% endfor %}
+            <hr>
+            <h4>Students</h4>
+            {% for student in course.students %}
+            <div><b>Name:</b> {{ student.name }}, <b>email:</b> {{ student.email }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="well">
+            <h4>Exchanges:</h4>
+            {% for exchange in course.exchanges %}
+            <a href="/exchanges/{{ exchange }}">{{ exchange }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if status == "teacher" %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="well">
+            <h4>Create New Exchange</h4>
+            <form role="form">
+                <div class="form-group" id="exchange-name-group">
+                    <label for="exchange-name">Exchange Name</label>
+                    <input type="name" class="form-control" id="exchange-name" placeholder="Enter Exchange Name">
+                    <ul class="errorlist" id="course-name-error"></ul>
+                </div>
+                <div class="btn btn-primary teacher-register-btn" id="register-exchange-btn">Create</div>
+                <span class="form-success-message" id="update-form-message"></span>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% endblock %}

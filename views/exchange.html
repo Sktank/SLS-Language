@@ -1,0 +1,72 @@
+{% extends './inside.html' %}
+
+{% block js %}
+<script>
+    $(function () {
+        var exchange = "{{ exchange.name }}";
+        $("#invite-course-btn").click(function() {
+            var self = this;
+            if ($(this).prop("disabled"))
+                return false;
+            $(this).prop("disabled", true);
+            $.ajax({
+                crossDomain: false,
+                type: "POST",
+                data: {
+                    exchange: exchange,
+                    school: $('#school-name').val(),
+                    course: $('#course-name').val()
+                },
+                url: "/exchange_invite"
+            }).success(function(data) {
+                        console.log(data);
+                        $(self).removeProp("disabled");
+                    });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header text-center" xmlns="http://www.w3.org/1999/html">
+    <h1><span class="fa fa-anchor"></span> {{ exchange.name }} Exchange</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="well">
+            <h4>Courses:</h4>
+            {% for course in exchange.courses %}
+            <div><b>Name:</b> {{ course.name }}, <b>School:</b> {{ course.school }}, <b>Teacher:</b> {{ course.teacher }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="well">
+            <h4>Invite Course To Exchange</h4>
+            <form role="form">
+
+                <div class="form-group" id="school-name-group">
+                    <label for="school-name">School Name</label>
+                    <input type="name" class="form-control" id="school-name" placeholder="School Name">
+                    <ul class="errorlist" id="school-name-error"></ul>
+                </div>
+
+                <div class="form-group" id="course-name-group">
+                    <label for="course-name">Course Name</label>
+                    <input type="name" class="form-control" id="course-name" placeholder="Course Name">
+                    <ul class="errorlist" id="course-name-error"></ul>
+                </div>
+
+                <div class="btn btn-primary teacher-register-btn" id="invite-course-btn">Invite</div>
+                <span class="form-success-message" id="update-form-message"></span>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

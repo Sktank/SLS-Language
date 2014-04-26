@@ -14,14 +14,35 @@
 }
 
 #chatEntries {
+    height: 88%;
+    width: 100%;
+    color: rgb(0, 68, 114);
+
+    overflow: auto;
+}
+
+#chatContainer {
+    border: 1px solid rgb(131, 190, 230);
     height: 500px;
     width: 100%;
-    border: 1px solid rgb(131, 190, 230);
     color: rgb(0, 68, 114);
     border-radius: 5px;
     margin-bottom: 10px;
-    padding: 20px;
-    overflow: auto;
+    padding: 2px 20px 20px 20px;
+
+}
+
+#chatTopic {
+    text-align: center;
+}
+
+#chatTopicContainer {
+    margin-top: -10px;
+
+}
+
+.cutoff-hr {
+    margin-bottom: 10px;
 }
 
 #messageInput {
@@ -170,7 +191,7 @@ input[type="checkbox"] {
  }
 
 .navbar-inverse:hover .navbar-brand:hover {
-    color: rgb(250, 223, 169);
+    color: rgb(250, 162, 28);
 }
 
 .fore-well {
@@ -182,3 +203,38 @@ input[type="checkbox"] {
     border-color: rgb(131, 190, 230);
     color: rgb(0, 68, 114);
 }
+
+.edit-input {
+    border-radius: 5px;
+    width: 245px;
+    color: rgb(0, 68, 114);
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.tooltip.top .tooltip-arrow {
+    bottom: 0;
+    left: 50%;
+    margin-left: -5px;
+    border-top-color: rgb(0, 68, 114);
+    border-width: 5px 5px 0;
+}
+.tooltip-inner {
+    color: rgb(250, 207, 96);
+    font-size: 14px;
+    background: rgb(0, 68, 114);
+    border: solid 1px rgb(250, 207, 96);
+}
+
+#relatedWords {
+    margin-top: 107px;
+    color: rgb(0, 68, 114);
+}
+
+@media only screen and (max-width: 992px) {
+    #relatedWords {margin-top: 0px;}
+}
+
+

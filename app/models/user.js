@@ -34,7 +34,19 @@ var userSchema = mongoose.Schema({
         token        : String,
         email        : String,
         name         : String
-    }
+    },
+
+    name             : {
+        first        : String,
+        last         : String
+    },
+
+    teacherCourses   : { type : Array , "default" : [] },
+    studentCourses   : { type : Array , "default" : [] },
+
+    alerts           : { type : Array , "default" : [] },
+
+    school           : String
 
 });
 
@@ -48,6 +60,10 @@ userSchema.methods.generateHash = function(password) {
 userSchema.methods.validPassword = function(password) {
     return bcrypt.compareSync(password, this.local.password);
 };
+
+userSchema.virtual('name.full').get(function () {
+    return this.name.first + ' ' + this.name.last;
+});
 
 // create the model for users and expose it to our app
 module.exports = mongoose.model('User', userSchema);

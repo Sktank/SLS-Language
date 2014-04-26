@@ -93,6 +93,13 @@ module.exports = function(server, io) {
 
         });
 
+        socket.on('suggestion', function (message) {
+            var room = message.room;
+            var data = message.data;
+            var msgNum = message.msgNum;
+            socket.broadcast.to(room).emit('suggestion', data, msgNum);
+        });
+
         socket.on('satReview', function(score, language) {
             ratings.update(socket.partnerGuid, score, language, 'numSatReviews', 'totalSatScore', 'numProfReviews', 'totalProfScore')
         });

@@ -17,6 +17,24 @@ var queue       = require('./queue.js'),
 
 var SPEED = .0025; // grows 25 points in 5 seconds
 
+var topics =
+{
+    'Weather': {
+        'translations': {'english':'Weather', 'spanish':"Tiempo"},
+        'words': {
+            'english': ['rain', 'wind', 'hot', 'cold', 'clouds', 'snow'],
+            'spanish': ['lluvia', 'viento', 'calor', 'frio', 'nubes', 'nieve']
+        }
+    },
+    'Food': {
+        'translations': {'english':'Food', 'spanish':"Comida"},
+        'words': {
+            'english': ['bread', 'cheese'],
+            'spanish': ['pan', 'queso']
+        }
+    }
+};
+
 
 // TODO: Not quite sure if this function works. Need to do some tests to verify
 exports.updateTimersAfterRemove = function(first, second) {
@@ -107,6 +125,23 @@ exports.queueNativeSeekingUser = function(socket) {
     tryNativeMatch(chat);
 };
 
+function getTopicInfo(topic, nativeLanguage, chatLanguage) {
+    var topicData = topics[topic];
+    var topicInfo = {'native':{topic:'', words:[]}, 'chat': {topic:'', words:[]}};
+
+    //set up native translations
+    topicInfo.native.topic = topicData.translations[nativeLanguage];
+    topicInfo.native.words = topicData.words[nativeLanguage];
+
+    //set up chat translations
+    topicInfo.chat.topic = topicData.translations[chatLanguage];
+    topicInfo.chat.words = topicData.words[chatLanguage];
+
+    console.log(topicInfo);
+    return topicInfo
+
+}
+
 function tryNativeMatch(chat) {
 
     console.log("trying native match");
@@ -157,7 +192,11 @@ function tryNativeMatch(chat) {
             reviews = false;
         }
 
-        websockets.io.sockets.in(room).emit('start', room, reviews);
+        //compose the topic infos
+        var topic = 'Weather';
+        var topicInfo = getTopicInfo(topic, 'english', 'spanish');
+
+        websockets.io.sockets.in(room).emit('start', room, reviews, topicInfo);
         return true;
     }
     else {
@@ -248,7 +287,11 @@ function checkAndMatch(current, next) {
         reviews = false;
     }
 
-    websockets.io.sockets.in(room).emit('start', room, reviews);
+    //compose the topic infos
+    var topic = 'Weather';
+    var topicInfo = getTopicInfo(topic, 'english', 'spanish');
+
+    websockets.io.sockets.in(room).emit('start', room, reviews, topicInfo);
 
     // update tree
 

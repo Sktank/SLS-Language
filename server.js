@@ -12,7 +12,9 @@ var express = require('express'),
     passport = require('passport'),
     flash 	 = require('connect-flash'),
     configDB = require('./config/database.js'),
-    queue    = require('./queue.js');
+    queue    = require('./queue.js'),
+    locale = require("locale"),
+    supported = ["en", "fr"];
 //    port     = process.env.PORT || 8080;
 
 mongoose.connect(configDB.url);
@@ -42,6 +44,8 @@ app.configure(function() {
     app.use(passport.initialize());
     app.use(passport.session()); // persistent login sessions
     app.use(flash()); // use connect-flash for flash messages stored in session
+
+    app.use(locale(supported))
 });
 
 server.listen(3000);

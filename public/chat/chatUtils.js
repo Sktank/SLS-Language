@@ -4,6 +4,8 @@ $.fn.raty.defaults.path = '/img';
 $.fn.raty.defaults.size = 24;
 $.fn.raty.defaults.half = true;
 
+var msgCount = 0;
+
 function addRatings() {
     $('#reviewContainer').fadeIn(300);
     var profClicked = false;
@@ -67,10 +69,6 @@ function scrollBottom(elemId) {
     element.scrollTop(height);
 }
 
-function addMessage(msg, pseudo) {
-    $("#chatEntries").append('<div class="message"><p><b>' + pseudo + ' :</b> ' + msg + '</p></div>');
-    scrollBottom('chatEntries');
-}
 
 function addWarning(msg, pseudo) {
     $("#chatEntries").append('<div class="message warning-message"><p><b>' + pseudo + ' :</b> ' + msg + '</p></div>');
@@ -81,17 +79,20 @@ function warnUser(language) {
     addWarning("Stop speaking in " + language + " or you will be kicked out!", "SLS Chat")
 }
 
-socket.on('message', function(data) {
-    addMessage(data, 'Language Partner');
-});
+//socket.on('message', function(data) {
+//    addMessage(data, 'Language Partner');
+//});
 
 
 socket.on('languageWarning', function(data) {
    warnUser(data);
 });
 
-socket.on('start', function(room, reviews) {
+socket.on('start', function(room, reviews, topicInfo) {
     var REVIEW_TIME = 5000;
+    var edits = {};
+
+
     $('#chat-status').text('Chat Initialized');
 
     // allow users to send messages
@@ -117,6 +118,17 @@ socket.on('start', function(room, reviews) {
     });
     $("#messageInput").attr('disabled', false);
 
+    // set up the topic display
+    $("#chatTopicContainer").html("<h3 id='chatTopic'>Topic: " + topicInfo.chat.topic + " (" + topicInfo.native.topic + ")</h3><hr class='cutoff-hr'>");
+    $("#chatContainer").append("<div id='chatEntries'></div>");
+    var words = "";
+    for (var i = 0; i < topicInfo.native.words.length; i++) {
+        words = words + "<div><b>" + topicInfo.native.words[i] + ":</b> " + topicInfo.chat.words[i] + "</div>"
+    }
+    $("#relatedWords").append("<h4>Related Words</h4>");
+    $("#relatedWords").append(words);
+
+
     // begin the rating timer
 
     if (reviews) {
@@ -125,7 +137,84 @@ socket.on('start', function(room, reviews) {
         }, REVIEW_TIME)
     }
 
+    socket.on('message', function(data) {
+        addMessage(data, 'Language Partner');
+    });
 
+    function addMessage(msg, pseudo) {
+        var color;
+        if (pseudo === "You") {
+            color = "grey;";
+            $("#chatEntries").append('<div class="message" data-toggle="popover"><p><span id="msg' + msgCount + '"><i class="fa fa-pencil-square-o" style="color: ' + color + '"></i> <b>' + pseudo + ' :</b></span> ' + msg + '</p></div>');
+
+        }
+        else {
+            color = "green;"
+            $("#chatEntries").append('<div class="message" data-toggle="tooltip"><p><span class="msgPop clickable" id="msg' + msgCount + '"><i class="fa fa-pencil-square-o" style="color: ' + color + '"></i> <b>' + pseudo + ' :</b></span> ' + msg + '</p></div>');
+
+        }
+        if (pseudo != "You") {
+            $("#msg" + msgCount).popover({
+                html: true,
+                title: "<b>Suggestion</b>",
+                content: "<input id='edit" + msgCount + "' class='edit-input'/>",
+                placement: "top"
+            });
+
+
+        }
+        initSuggestion(msgCount);
+        msgCount = msgCount + 1;
+        scrollBottom('chatEntries');
+    }
+
+    $('#chatEntries').bind('scroll', function() {
+        console.log("scrolling");
+        $(".msgPop").popover('hide');
+    });
+
+
+    function initSuggestion(msgNum) {
+        $(document).on('keypress', "#edit" + msgNum, function(e) {
+            console.log(msgNum);
+            console.log(e);
+            var code = e.keyCode || e.which;
+            if(code == 13) {
+                sendSuggestion(msgNum);
+            }
+        });
+
+        $(document).on('click', "#msg" + msgNum, function() {
+            $("#edit" + msgNum).focus();
+        })
+
+    }
+
+    function sendSuggestion(msgNum) {
+        $("#msg" + msgNum).popover('hide');
+        console.log($("#edit" + msgNum).val());
+        $("#msg" + msgNum + "> .fa").css("color", "gold");
+        socket.emit('suggestion', {room: room, data:$("#edit" + msgNum).val(), msgNum: msgNum});
+        console.log(msgNum);
+        edits[msgNum] = $("#edit" + msgNum).val();
+        $("#msg" + msgNum).popover('destroy');
+        $("#msg" + msgNum).popover({
+            html: true,
+            title: "<b>Suggestion</b>",
+            content: "<input id='edit" + msgCount + "' class='edit-input' value='" + edits[msgNum] + "'/>",
+            placement: "top"
+        });
+    }
+
+    socket.on('suggestion', function(data, msgNum) {
+        $("#msg" + msgNum + "> .fa").css("color", "red");
+        console.log(msgNum);
+        $("#msg" + msgNum).tooltip({
+            html: true,
+            title: "<b>" + data + "</b>",
+            placement: "top"
+        });
+    })
 
 });
 
@@ -136,6 +225,7 @@ socket.on('end', function() {
 
 
 $(function () {
+    $("#wtf").popover();
     $("#messageInput").attr('disabled', true);
     var path = window.location.pathname;
     var native;
