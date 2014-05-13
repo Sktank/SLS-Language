@@ -67,57 +67,90 @@
 
 {% block content %}
     <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
+        <h1><span class="fa fa-anchor"></span> Dashboard</h1>
     </div>
 
-    <div class="row">
+    <div class="row fore-theme">
 
         <!-- LOCAL INFORMATION -->
+        <div class="col-md-6" id="dash-left-column">
+
         <div class="col-md-12">
             <div class="well">
-                <h3><span class="fa fa-user"></span> Local</h3>
+                <h3><span class="fa fa-user"></span> Info</h3>
 
                 <p>
-                    <strong>id</strong>: {{ user._id }}<br>
-                    <strong>email</strong>: {{ user.local.email }}<br>
-                    <strong>first name</strong>: {{ user.name.first }}<br>
-                    <strong>last name</strong>: {{ user.name.last }}<br>
-                    <strong>full name</strong>: {{ user.name.full }}<br>
-                    <strong>school</strong>: {{ user.school }}<br>
-                    <strong>password</strong>: {{ user.local.password }}<br>
-                    <br>
-                    <strong>teacher courses</strong>: {{ user.teacherCourses }}<br>
-                    {% for tcourse in user.teacherCourses %}
-                    <a href="/courses/{{ tcourse }}">{{ tcourse }}</a>
+                    <strong>Name</strong>: {{ user.name.full }}<br>
+                    <strong>Email</strong>: {{ user.local.email }}<br>
+                    <strong>School</strong>: {{ user.school }}<br>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="well">
+                <h4><span class="fa fa-th-large"></span> {{ school.name }} Courses</h4>
+                <div class="row">
+                {% if school.courses.length > 0 %}
+                    {% for index, course in school.courses %}
+                        <span class="col-md-6 course-container">
+                        <h5 class="course-header">{{ course.name }}</h5>
+                        <p><strong>Teacher:</strong> {{ course.teacher }}</p>
+                        <hr class="course-hr">
+                        {% if not course.taken %}
+                            <div class="btn btn-primary btn-block" id="enroll-course-btn{{ index }}">Enroll</div>
+                        {% else %}
+                            <div class="btn btn-default btn-block" id="drop-course-btn{{ index }}">Drop</div>
+                        {% endif %}
+                        </span>
                     {% endfor %}
-                    <br>
-                    <strong>student courses</strong>: {{ user.studentCourses }}<br>
+                {% else %}
+                    <h6>No Courses</h6>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+        <div class="col-md-6" id="dash-right-column">
+
+            <div class="col-md-12">
+            <div class="well">
+                <h3><span class="fa fa-group"></span> Courses</h3>
+
+                <p>
+                    {% if user.teacherCourses.length > 0 %}
+                    <h5><strong>Teacher courses</strong></h5>
+                        <ul>
+                        {% for tcourse in user.teacherCourses %}
+                        <li><a href="/courses/{{ tcourse }}">{{ tcourse }}</a></li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <h6>No Courses</h6>
+                    {% endif %}
+
+                    <h5><strong>Student courses</strong></h5>
+
+                    {% if user.studentCourses.length > 0 %}
+                    <ul>
                     {% for scourse in user.studentCourses %}
-                    <a href="/courses/{{ scourse }}">{{ scourse }}</a>
+                    <li><a href="/courses/{{ scourse }}">{{ scourse }}</a></li>
                     {% endfor %}
-                    <br>
+                    </ul>
+                    {% else %}
+                        <h6>No Courses</h6>
+                    {% endif %}
                 </p>
 
             </div>
         </div>
 
-        <div class="col-md-12">
-            <div class="well">
-                <h4>Available Classes For {{ school.name }} </h4>
-                {% for index, course in school.courses %}
-                {% if not course.taken%}
-                <div> {{index}}) {{ course.name }}</div>
-                <div> Teacher: {{ course.teacher }}</div>
-                <div class="btn btn-primary teacher-register-btn" id="enroll-course-btn{{ index }}">Enroll</div>
-                <br>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
 
         <div class="col-md-12">
             <div class="well">
-                <h4>Register New Class</h4>
+                <h4><span class="fa fa-plus"></span> Register New Class</h4>
                 <form role="form">
                     <div class="form-group" id="course-name-group">
                         <label for="course-name">Course Name</label>
@@ -132,7 +165,24 @@
 
         <div class="col-md-12">
             <div class="well">
-                <h4>Alert Box</h4>
+                <h4><span class="fa fa-book"></span> Lessons</h4>
+                {% if user.lessons.length > 0 %}
+                <ul>
+                    {% for lesson in user.lessons %}
+                    <li><a href="/lessons/{{ lesson }}">{{ lesson }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <h6>No Lessons</h6>
+                {% endif %}
+                <h5><a href="/lessonbuilder"><span class="fa fa-plus"></span> Create A New Lesson With the Lesson Builder</a></h5>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="well">
+                <h4><span class="fa fa-comments-o"></span> Alert Box</h4>
+                {% if user.alerts.length > 0 %}
                 {% for index, alert in user.alerts %}
                 {% if alert.type == "exchange invite" %}
                 <div> <b>{{ alert.contents.inviter }}</b> has invited your course <b>{{ alert.contents.course }}</b> to join the <b>{{ alert.contents.exchange }}</b> Exchange.</div>
@@ -141,8 +191,15 @@
                 <br>
                 {% endif %}
                 {% endfor %}
+                {% else %}
+                <h5>Empty</h5>
+                {% endif %}
             </div>
         </div>
+
+        </div>
+
+
 
 
     </div>

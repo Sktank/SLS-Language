@@ -36,8 +36,8 @@
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav registration-links">
                         {% block activeTab %}
-                        <a type="button" class="btn nav-fore-btn navbar-btn" href="/login">Login</a>
-                        <a type="button" class="btn nav-fore-btn navbar-btn" href="/signup">Signup</a>
+                        <a type="button" class="btn nav-fore-btn navbar-btn" href="/login">{{ __("Login")}}</a>
+                        <a type="button" class="btn nav-fore-btn navbar-btn" href="/signup">{{ __("Signup2")}}</a>
                         {% endblock %}
                     </ul>
 
@@ -49,18 +49,18 @@
         <div class="row">
         <div class="col-md-4">
             <div class="well fore-well">
-                <h3 style="text-align: center;">Start Chatting In The Language Of Your Dreams!</h3>
+                <h3 style="text-align: center;">{{ __("Start Chatting In The Language Of Your Dreams!")}}</h3>
                 <hr>
-                <h4>Directions:</h4>
-                <h5>1) Pick the language you want to talk in.</h5>
-                <h5>2) Select your skill level at that language.</h5>
-                <h5>3) Start a one on one conversation!</h5>
+                <h4>{{ __("Directions")}}:</h4>
+                <h5>1) {{ __("Pick a language to speak in.")}}</h5>
+                <h5>2) {{ __("Select your skill level at that language.")}}</h5>
+                <h5>3) {{ __("Start a one on one conversation!")}}</h5>
             </div>
         </div>
         <div class="col-md-8">
             {% for index, language in languages %}
-            <a id="start-{{language}}" class="btn btn-lg language-btn">{{ language }}</a>
-            <div id="{{language}}dropdown"></div>
+            <a id="start-{{language|first}}" class="btn btn-lg language-btn">{{ language|last }}</a>
+            <div id="{{language|first}}dropdown"></div>
             {% endfor %}
         </div>
         </div>
@@ -68,64 +68,64 @@
 
     <script>
         {% for index, language in languages %}
-            var {{language}}toggle = false;
-            var {{language}}disabled = false;
-            var {{language}}checking = false;
-            var {{language}}nativeIsChecked = false;
-            console.log({{language}}toggle);
+            var {{language|first}}toggle = false;
+            var {{language|first}}disabled = false;
+            var {{language|first}}checking = false;
+            var {{language|first}}nativeIsChecked = false;
+            console.log({{language|first}}toggle);
             $('#start-{{ language}}').on('click', function () {
                 var self = this;
                 console.log(self);
-                if (!{{language}}disabled) {
-                    {{language}}disabled = true;
-                    if (!{{language}}toggle) {
+                if (!{{language|first}}disabled) {
+                    {{language|first}}disabled = true;
+                    if (!{{language|first}}toggle) {
                         $('#start-{{ language}}').append(
                                 '<div class="skill-container">' +
-                                '<a id="beginner-{{language}}" class="btn btn-info skill-btn" href="/chat/{{language}}/beginner/0">Beginner</a>' +
-                                '<a id="intermediate-{{language}}" class="btn btn-warning btn-right-skill-level skill-btn" href="/chat/{{language}}/intermediate/0">Intermediate</a>' +
-                                '<a id="advanced-{{language}}" class="btn btn-danger btn-right-skill-level skill-btn" href="/chat/{{language}}/advanced/0">Advanced</a>' +
-                                '<a id="native-{{language}}" class="btn btn-right-skill-level btn-purp skill-btn" href="/chat/{{language}}/native/0">Native</a>' +
+                                '<a id="beginner-{{language|first}}" class="btn btn-info skill-btn" href="/chat/{{language|first}}/beginner/0">Beginner</a>' +
+                                '<a id="intermediate-{{language|first}}" class="btn btn-warning btn-right-skill-level skill-btn" href="/chat/{{language|first}}/intermediate/0">Intermediate</a>' +
+                                '<a id="advanced-{{language|first}}" class="btn btn-danger btn-right-skill-level skill-btn" href="/chat/{{language|first}}/advanced/0">Advanced</a>' +
+                                '<a id="native-{{language|first}}" class="btn btn-right-skill-level btn-purp skill-btn" href="/chat/{{language|first}}/native/0">Native</a>' +
                                 '</div><div class="native-container">' +
-                                '<form><div class="checkbox"><label class="languageCheckLabel" id="{{language}}checkboxlabel"><input type="checkbox" class="bigCheckbox" id="{{language}}checkbox">Also match me with native speakers</label></div></form>' +
+                                '<form><div class="checkbox"><label class="languageCheckLabel" id="{{language|first}}checkboxlabel"><input type="checkbox" class="bigCheckbox" id="{{language|first}}checkbox">Also match me with native speakers</label></div></form>' +
                                 '</div>'
 
                         );
 
-                        $('#{{language}}checkbox, #{{language}}checkboxlabel').click(function() {
+                        $('#{{language|first}}checkbox, #{{language|first}}checkboxlabel').click(function() {
                             console.log("checkbox");
-                            {{language}}checking = true;
-                            if ({{language}}nativeIsChecked == false) {
+                            {{language|first}}checking = true;
+                            if ({{language|first}}nativeIsChecked == false) {
                                 console.log('false');
-                                $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/1');
-                                $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/1');
-                                $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/1');
-                                $('#native-{{language}}').attr('disabled', true);
-                                {{language}}nativeIsChecked = true;
+                                $('#beginner-{{language|first}}').attr('href', $('#beginner-{{language|first}}').attr('href').substring(0, $('#beginner-{{language|first}}').attr('href').length - 2) + '/1');
+                                $('#intermediate-{{language|first}}').attr('href', $('#intermediate-{{language|first}}').attr('href').substring(0, $('#intermediate-{{language|first}}').attr('href').length - 2) + '/1');
+                                $('#advanced-{{language|first}}').attr('href', $('#advanced-{{language|first}}').attr('href').substring(0, $('#advanced-{{language|first}}').attr('href').length - 2) + '/1');
+                                $('#native-{{language|first}}').attr('disabled', true);
+                                {{language|first}}nativeIsChecked = true;
                             }
                             else {
-                                $('#beginner-{{language}}').attr('href', $('#beginner-{{language}}').attr('href').substring(0, $('#beginner-{{language}}').attr('href').length - 2) + '/0');
-                                $('#intermediate-{{language}}').attr('href', $('#intermediate-{{language}}').attr('href').substring(0, $('#intermediate-{{language}}').attr('href').length - 2) + '/0');
-                                $('#advanced-{{language}}').attr('href', $('#advanced-{{language}}').attr('href').substring(0, $('#advanced-{{language}}').attr('href').length - 2) + '/0');
-                                $('#native-{{language}}').attr('disabled', false);
-                                {{language}}nativeIsChecked = false;
+                                $('#beginner-{{language|first}}').attr('href', $('#beginner-{{language|first}}').attr('href').substring(0, $('#beginner-{{language|first}}').attr('href').length - 2) + '/0');
+                                $('#intermediate-{{language|first}}').attr('href', $('#intermediate-{{language|first}}').attr('href').substring(0, $('#intermediate-{{language|first}}').attr('href').length - 2) + '/0');
+                                $('#advanced-{{language|first}}').attr('href', $('#advanced-{{language|first}}').attr('href').substring(0, $('#advanced-{{language|first}}').attr('href').length - 2) + '/0');
+                                $('#native-{{language|first}}').attr('disabled', false);
+                                {{language|first}}nativeIsChecked = false;
 
             }
                         });
 
-                        {{language}}toggle = true;
+                        {{language|first}}toggle = true;
                     }
                     else {
 //                        setTimeout(function() {
-                            if (!{{language}}checking) {
-                            $('#start-{{ language}}').empty().append('{{language}}');
-                            {{language}}toggle = false;
-                            {{language}}nativeIsChecked = false;
+                            if (!{{language|first}}checking) {
+                            $('#start-{{ language}}').empty().append('{{language|first}}');
+                            {{language|first}}toggle = false;
+                            {{language|first}}nativeIsChecked = false;
                             }
 //                        }, 10)
 
                     }
-                    {{language}}disabled = false;
-                    {{language}}checking = false;
+                    {{language|first}}disabled = false;
+                    {{language|first}}checking = false;
                 };
             });
 

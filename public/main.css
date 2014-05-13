@@ -22,7 +22,7 @@
 }
 
 #chatContainer {
-    border: 1px solid rgb(131, 190, 230);
+    border: 1px solid rgb(0, 68, 114);
     height: 500px;
     width: 100%;
     color: rgb(0, 68, 114);
@@ -32,7 +32,7 @@
 
 }
 
-#chatTopic {
+.chatTopic {
     text-align: center;
 }
 
@@ -43,6 +43,7 @@
 
 .cutoff-hr {
     margin-bottom: 10px;
+    margin-top: 0px;
 }
 
 #messageInput {
@@ -214,6 +215,11 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
+
+.popover {
+    border: 1px solid rgb(0, 68, 114);
+}
+
 .tooltip.top .tooltip-arrow {
     bottom: 0;
     left: 50%;
@@ -233,8 +239,93 @@ input[type="checkbox"] {
     color: rgb(0, 68, 114);
 }
 
+#dash-left-column {
+    margin-left: 15px;
+}
+
+#dash-right-column {
+    margin-left: -30px;
+}
+
+.course-container {
+    height: 130px;
+    width: 48%;
+    margin-right: 1%;
+    margin-left: 1%;
+    margin-bottom: 10px;
+    border: 1px solid rgb(0, 68, 114);
+    border-radius: 5px;
+}
+
+.course-container:hover {
+    background-color: rgb(250, 225, 140);
+}
+
+.course-header {
+    font-size: 16px;
+}
+
+.course-hr {
+    margin-bottom: 10px;
+}
+
+.btn-default {
+    border-color: rgb(0, 68, 114);
+}
+.btn-default:hover {
+    border-color: rgb(0, 68, 114);
+}
+
+#addTopicBtn {
+    margin-top: 30px;
+}
+
+.topic {
+    border-bottom: 1px solid rgb(0, 68, 114);
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+}
+
+.lessonbuilder-well {
+    padding-bottom: 40px;
+}
+
+#saveLessonBtn {
+    float: right;
+    margin-right: 15px;
+}
+
+.languageLabel {
+    text-align: center;
+}
+
+.lesson-content {
+    margin-bottom: 15px;
+}
+
+.right-content {
+    visibility: hidden;
+}
+
+.btn-course {
+    width: 110px;
+}
+
 @media only screen and (max-width: 992px) {
     #relatedWords {margin-top: 0px;}
+    #dash-left-column {
+        margin-left: 0px;
+    }
+
+    #dash-right-column {
+        margin-left: 0px;
+    }
 }
+
+
+
+
+
+
 
 

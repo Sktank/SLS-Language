@@ -1,0 +1,132 @@
+{% extends './inside.html' %}
+
+{% block js %}
+<script type="text/javascript" src="/knockout.js"></script>
+<!--<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>-->
+<script type="text/javascript" src="/profile/lessonbuilder.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $("#savebtn").click(function() {
+            $("#savemsg").css("visibility", "visible");
+        });
+
+
+    {% for index, tcourse in user.teacherCourses %}
+        $('#course' + {{ index }}).click(function() {
+            $("#savemsg").css("visibility", "hidden");
+            if ($('#course' + {{ index }}).hasClass("btn-success")) {
+            $('#course' + {{ index }}).removeClass("btn-success");
+            $('#course' + {{ index }}).addClass("btn-danger");
+            $('#course' + {{ index }}).animate({
+                marginLeft: "0%"
+            }, 1000);
+            }
+            else {
+            $('#course' + {{ index }}).removeClass("btn-danger");
+            $('#course' + {{ index }}).addClass("btn-success");
+            $('#course' + {{ index }}).animate({
+                marginLeft: "67%"
+            }, 1000);
+            }
+
+        })
+    {% endfor %}
+    });
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="page-header text-center" xmlns="http://www.w3.org/1999/html">
+    <h1><span class="fa fa-book"></span>{{ lesson.name }}</h1>
+</div>
+<div class="row fore-theme">
+    <div class="col-md-12">
+        <div class="well">
+
+
+            {% for index, topic in topics %}
+                <h2>Topic {{ (index + 1) }}: {{ topic.name }}</h2>
+
+                <h4>Questions</h4>
+                <div class="row">
+                <div class="col-md-6">
+                    <h5>{{ lesson.native }}</h5>
+                    {% for index, question in topic.nativeLanguageQuestions %}
+                    <strong>{{ (index + 1) }}.</strong>
+                    <p>{{ question.content }}</p>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <h5>{{ lesson.foreign }}</h5>
+                    {% for question in topic.foreignLanguageQuestions %}
+                    <strong style="visibility: hidden;">0</strong>
+                    <p>{{ question.content }}</p>
+                    {% endfor %}
+                </div>
+                </div>
+                <hr>
+
+                <h4>Vocab</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>{{ lesson.native }}</h5>
+                        {% for index, word in topic.nativeLanguageWords %}
+                        <strong>{{ (index + 1) }}.</strong>
+                        <p>{{ word.content }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>{{ lesson.foreign }}</h5>
+                        {% for word in topic.foreignLanguageWords %}
+                        <strong style="visibility: hidden;">0</strong>
+                        <p>{{ word.content }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <hr>
+
+                <h4>Phrases</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>{{ lesson.native }}</h5>
+                        {% for index, phrase in topic.nativeLanguagePhrases %}
+                        <strong>{{ (index + 1) }}.</strong>
+                        <p>{{ phrase.content }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>{{ lesson.foreign }}</h5>
+                        {% for phrase in topic.foreignLanguagePhrases %}
+                        <strong style="visibility: hidden;">0</strong>
+                        <p>{{ phrase.content }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <hr>
+                <hr>
+            {% endfor %}
+
+            <h3>Assign {{ lesson.name }} to Courses</h3>
+            {% if user.teacherCourses.length > 0 %}
+                <div class="row">
+                <div class="col-md-4">
+                <h4><span>Not Assigned</span><span style="margin-left: 30%">Assigned</span></h4>
+                {% for index, tcourse in user.teacherCourses %}
+                <div class="btn btn-danger btn-course" id="course{{ index }}">{{ tcourse }}</div><br><br>
+                {% endfor %}
+                <br><br><br>
+                    <div id="savebtn" class="btn btn-block btn-primary">Save</div>
+                    <h6 id="savemsg" style="visibility: hidden">Successfully Saved!</h6>
+                </div>
+                </div>
+            {% else %}
+            <h6>No Courses</h6>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

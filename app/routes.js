@@ -11,8 +11,9 @@ var chat      = require('../chat'),
     Course    = require('./models/course'),
     User      = require('./models/user'),
     Exchange  = require('./models/exchange'),
+    Lesson    = require('./models/lesson'),
     locale    = require('locale'),
-    supported = ["en", "fr"],
+    supported = ["en", "es"],
     languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Chinese', 'Japanese', 'Arabic'];
 
 module.exports = function(app, passport) {
@@ -23,7 +24,10 @@ module.exports = function(app, passport) {
             "Our default is: " + locale.Locale["default"] + "\n" +
             "The best match is: " + req.locale + "\n");
         res.render(
-            'home.html', {languages:languages}
+            'home.html',
+            {
+                languages:[['English', req.i18n.__("English")],['Spanish', req.i18n.__("Spanish")],['French', req.i18n.__("French")],['German', req.i18n.__("German")],['Italian', req.i18n.__("Italian")],['Chinese', req.i18n.__("Chinese")],['Japanese', req.i18n.__("Japanese")],['Arabic', req.i18n.__("Arabic")]]
+            }
         );
     });
 
@@ -353,7 +357,59 @@ module.exports = function(app, passport) {
         res.end(JSON.stringify({ resp: "course enrolled" }));
     });
 
-    // =====================================
+    app.get('/lessonbuilder', function(req, res) {
+        res.render('lessonbuilder.html');
+    });
+
+
+    app.post('/register_lesson', function(req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        //get the user
+
+        console.log(req.body.topics);
+
+        //create a new lesson on that user
+        Lesson.update({ 'user' : req.user.local.email, name: 'req.body.name' },{'name': req.body.name, 'native': req.body.nativeLanguage, 'foreign': req.body.foreignLanguage, 'topics': req.body.topics },{upsert:true},function(err){
+            if(err){
+                console.log(err);
+            }
+            else{
+                User.update({ 'local.email' : req.user.local.email},{$addToSet: {lessons: req.body.name }},{upsert:true},function(err){
+                    if(err){
+                        console.log(err);
+                    }else{
+                        console.log("Successfully added");
+                        res.end(JSON.stringify({ resp: req.body }));
+                    }
+                });
+            }
+        });
+    });
+
+    app.get('/lessons/:lessonname', function(req, res) {
+        console.log(req.params.lessonname);
+        var user = req.user;
+
+        Lesson.findOne({ 'user' : req.user.local.email, 'name': req.params.lessonname  }, function(err, lesson) {
+            // if there are any errors, return the error
+            if (err)
+                return "fuck";
+            if (lesson) {
+                console.log(lesson);
+                console.log(eval("(" + lesson.topics + ')'));
+                var topics = eval("(" + lesson.topics + ')');
+                res.render('lesson.html',
+                    {
+                        lesson: lesson,
+                        topics: topics,
+                        user: user
+                    }
+                );
+            }
+        });
+    });
+
+        // =====================================
     // LOGOUT ==============================
     // =====================================
     app.get('/logout', function(req, res) {

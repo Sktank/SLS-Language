@@ -46,7 +46,9 @@ var userSchema = mongoose.Schema({
 
     alerts           : { type : Array , "default" : [] },
 
-    school           : String
+    school           : String,
+
+    lessons          : { type : Array , "default" : [] }
 
 });
 

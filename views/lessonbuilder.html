@@ -1,0 +1,135 @@
+{% extends './inside.html' %}
+
+{% block js %}
+    <script type="text/javascript" src="/knockout.js"></script>
+    <!--<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>-->
+    <script type="text/javascript" src="/profile/lessonbuilder.js"></script>
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<!--<pre data-bind="text: ko.toJSON($root, null, 2)"></pre>-->
+<div class="page-header text-center" xmlns="http://www.w3.org/1999/html">
+    <h1><span class="fa fa-book"></span> Lesson Builder</h1>
+</div>
+<div class="row fore-theme">
+        <div class="col-md-12">
+            <div class="well lessonbuilder-well">
+
+                <!--General Lesson Info-->
+                <div class="row">
+                <div class="col-md-6">
+                <h3>Name: <span data-bind="text: name"></span></h3>
+                <input type="text" class="form-control" data-bind="value: name"/>
+                </div>
+                </div>
+
+                <div class="row">
+                <div class="col-md-6">
+                <h4>Native Language: <span data-bind="text: nativeLanguage"></span></h4>
+                <input type="text" class="form-control" data-bind="value: nativeLanguage"/>
+                </div>
+
+                <div class="col-md-6">
+                <h4>Foreign Language: <span data-bind="text: foreignLanguage"></span></h4>
+                <input type="text" class="form-control" data-bind="value: foreignLanguage"/>
+                </div>
+                </div>
+
+                <!--Savings: <input data-bind="value: savings, valueUpdate: 'afterkeydown'" />-->
+                <!--<div style="margin: 10px" data-bind="slider: savings, sliderOptions: {min: 0, max: 100, range: 'min', step: 1}"></div>-->
+
+                <hr>
+
+                <!-- ko foreach: $root.topics -->
+                <div class="col-md-12 topic">
+                    <h4><span data-bind="text: ($index() + 1)"></span>) Topic: <span data-bind="text: $data.name"></span></h4>
+                    <input type="text" class="form-control" data-bind="value: $data.name"/>
+                    <hr>
+                    <h5>I. Questions</h5>
+                    <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="languageLabel" data-bind="text: $root.nativeLanguage"></h5>
+
+                        <!-- ko foreach: {data:$data.nativeLanguageQuestions, afterAdd: $root.slider} -->
+                        <strong><span data-bind="text: ($index() + 1)"></span>.</strong>
+                        <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                        <!--Chat Time: <div data-bind="slider: time, sliderOptions: {min: 0, max: 30, range: 'min', step: 1}"></div>-->
+                        <!-- /ko -->
+
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="languageLabel" data-bind="text: $root.foreignLanguage"></h5>
+
+                        <!-- ko foreach: $data.foreignLanguageQuestions -->
+                        <strong class="right-content"><span data-bind="text: ($index() + 1)"></span>.</strong>
+                        <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                        <!-- /ko -->
+
+                    </div>
+                    </div>
+                    <div class="btn btn-primary addBtn btn-xs"  data-bind="click: $data.addQuestion"><span class="fa fa-plus"></span> Add New Question</div>
+                    <hr>
+                    <h5>II. Vocabulary</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="languageLabel" data-bind="text: $root.nativeLanguage"></h5>
+
+                            <!-- ko foreach: $data.nativeLanguageWords -->
+                            <strong><span data-bind="text: ($index() + 1)"></span>.</strong>
+                            <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                            <!-- /ko -->
+
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="languageLabel" data-bind="text: $root.foreignLanguage"></h5>
+
+                            <!-- ko foreach: $data.foreignLanguageWords -->
+                            <strong class="right-content"><span data-bind="text: ($index() + 1)"></span>.</strong>
+                            <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                            <!-- /ko -->
+
+                        </div>
+                    </div>
+                    <div class="btn btn-primary addBtn btn-xs"  data-bind="click: $data.addWord"><span class="fa fa-plus"></span> Add New Word</div>
+                    <hr>
+
+                    <h5>III. Phrases</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="languageLabel" data-bind="text: $root.nativeLanguage"></h5>
+
+                            <!-- ko foreach: $data.nativeLanguagePhrases -->
+                            <strong><span data-bind="text: ($index() + 1)"></span>.</strong>
+                            <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                            <!-- /ko -->
+
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="languageLabel" data-bind="text: $root.foreignLanguage"></h5>
+
+                            <!-- ko foreach: $data.foreignLanguagePhrases -->
+                            <strong class="right-content"><span data-bind="text: ($index() + 1)"></span>.</strong>
+                            <input type="text" class="form-control lesson-content" data-bind="value: content"/>
+                            <!-- /ko -->
+
+                        </div>
+                    </div>
+                    <div class="btn btn-primary addBtn btn-xs"  data-bind="click: $data.addPhrase"><span class="fa fa-plus"></span> Add New Phrase</div>
+
+                </div>
+                <!-- /ko -->
+
+                <div class="btn btn-primary" id="addTopicBtn"  data-bind="click: $root.addTopic"><span class="fa fa-plus"></span> Add New Topic</div>
+                <br>
+                <div class="btn btn-success" id="saveLessonBtn" data-bind="click: $root.saveLesson">Save</div>
+                <br>
+
+
+            </div>
+        </div>
+</div>
+{% endblock %}
