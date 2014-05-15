@@ -89,6 +89,18 @@ module.exports = function(app, passport) {
             }
         });
 
+        School.findOne({ 'name' :  "Princeton" }, function(err, school) {
+            if (!school) {
+                var newSchool = new School();
+                newSchool.name = "Princeton";
+                newSchool.save(function(err) {
+                    if (err)
+                        throw err;
+                    console.log('school should be saved!');
+                    return 0;
+                });
+            }
+        });
 
 
         School.findOne({ 'name' :  req.user.school }, function(err, school) {
