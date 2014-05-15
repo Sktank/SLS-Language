@@ -89,7 +89,7 @@ socket.on('languageWarning', function(data) {
 });
 
 socket.on('start', function(room, reviews, topicInfo) {
-    var REVIEW_TIME = 5000;
+    var REVIEW_TIME = 25000;
     var edits = {};
 
 
@@ -118,26 +118,38 @@ socket.on('start', function(room, reviews, topicInfo) {
     });
     $("#messageInput").attr('disabled', false);
 
+
+
+
     // set up the topic display
-    $("#chatTopicContainer").html("<h3 class='chatTopic'>" + topicInfo.chat.questions[0] + "</h3><h5 class='chatTopic'>(" + topicInfo.native.questions[0] + ")</h5><hr class='cutoff-hr'>");
-    $("#chatContainer").append("<div id='chatEntries'></div>");
-    var words = "";
-    for (var i = 0; i < topicInfo.native.words.length; i++) {
-        words = words + "<div><b>" + topicInfo.native.words[i] + ":</b> " + topicInfo.chat.words[i] + "</div>"
+
+    var path = window.location.pathname;
+    var language = path.split('/')[2].toLowerCase();
+
+    if (language == "spanish") {
+        $("#chatContainer").append("<div class='chatEntriesClass1' id='chatEntries'></div>");
+
+        $("#chatTopicContainer").html("<h3 class='chatTopic'>" + topicInfo.chat.questions[0] + "</h3><h5 class='chatTopic'>(" + topicInfo.native.questions[0] + ")</h5><hr class='cutoff-hr'>");
+
+        var words = "";
+        for (var i = 0; i < topicInfo.native.words.length; i++) {
+            words = words + "<div><b>" + topicInfo.native.words[i] + ":</b> " + topicInfo.chat.words[i] + "</div>"
+        }
+
+        var phrases = "";
+        for (var i = 0; i < topicInfo.native.phrases.length; i++) {
+            phrases = phrases + "<div><b>" + topicInfo.native.phrases[i] + ":</b> " + topicInfo.chat.phrases[i] + "</div>"
+        }
+
+        $("#relatedWords").append("<h4>" + document.relatedWords + "</h4>");
+        $("#relatedWords").append(words);
+
+        $("#relatedWords").append("<br><h4>" + document.relatedPhrases + "</h4>");
+        $("#relatedWords").append(phrases);
     }
-
-    var phrases = "";
-    for (var i = 0; i < topicInfo.native.phrases.length; i++) {
-        phrases = phrases + "<div><b>" + topicInfo.native.phrases[i] + ":</b> " + topicInfo.chat.phrases[i] + "</div>"
+    else {
+        $("#chatContainer").append("<div class='chatEntriesClass2' id='chatEntries'></div>");
     }
-
-    $("#relatedWords").append("<h4>" + document.relatedWords + "</h4>");
-    $("#relatedWords").append(words);
-
-    $("#relatedWords").append("<br><h4>" + document.relatedPhrases + "</h4>");
-    $("#relatedWords").append(phrases);
-
-
 
     // begin the rating timer
 

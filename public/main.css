@@ -14,11 +14,20 @@
 }
 
 #chatEntries {
-    height: 88%;
     width: 100%;
     color: rgb(0, 68, 114);
 
     overflow: auto;
+}
+
+.chatEntriesClass1 {
+    height: 86%;
+
+}
+
+.chatEntriesClass2 {
+    height: 100%;
+
 }
 
 #chatContainer {
